@@ -1,0 +1,16 @@
+# Database Service Dependencies
+# ==============================
+
+# Web framework
+flask==3.0.0
+werkzeug==3.0.1
+
+# OpenTelemetry - Core
+opentelemetry-api==1.21.0
+opentelemetry-sdk==1.21.0
+
+# OpenTelemetry - Exporters
+opentelemetry-exporter-otlp-proto-http==1.21.0
+
+# OpenTelemetry - Instrumentation
+opentelemetry-instrumentation-flask==0.42b0

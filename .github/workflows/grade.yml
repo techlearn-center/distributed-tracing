@@ -1,0 +1,188 @@
+# GitHub Actions Workflow for Distributed Tracing Challenge
+# =========================================================
+# This workflow runs when students push their solutions.
+# It validates their OpenTelemetry instrumentation.
+
+name: Grade Distributed Tracing Challenge
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  grade:
+    name: Validate Tracing Instrumentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check Frontend instrumentation
+        run: |
+          echo "🔍 Checking Frontend service instrumentation..."
+
+          FILE="services/frontend/app.py"
+          if [ ! -f "$FILE" ]; then
+            echo "❌ File not found: $FILE"
+            exit 1
+          fi
+
+          # Check for uncommented imports
+          if grep -q "^from opentelemetry import trace" "$FILE" && \
+             grep -q "^from opentelemetry.sdk.trace import TracerProvider" "$FILE"; then
+            echo "✅ OpenTelemetry imports found"
+          else
+            echo "❌ OpenTelemetry imports are still commented out"
+            exit 1
+          fi
+
+          # Check for tracer setup
+          if grep -q "trace.set_tracer_provider" "$FILE"; then
+            echo "✅ Tracer provider setup found"
+          else
+            echo "❌ Tracer provider setup is still commented out"
+            exit 1
+          fi
+
+          # Check for instrumentation
+          if grep -q "FlaskInstrumentor" "$FILE" && \
+             grep -q "RequestsInstrumentor" "$FILE"; then
+            echo "✅ Instrumentation found"
+          else
+            echo "❌ Instrumentation is still commented out"
+            exit 1
+          fi
+
+          echo "✅ Frontend service is properly instrumented!"
+
+      - name: Check Backend instrumentation
+        run: |
+          echo "🔍 Checking Backend service instrumentation..."
+
+          FILE="services/backend/app.py"
+          if [ ! -f "$FILE" ]; then
+            echo "❌ File not found: $FILE"
+            exit 1
+          fi
+
+          if grep -q "^from opentelemetry import trace" "$FILE" && \
+             grep -q "trace.set_tracer_provider" "$FILE" && \
+             grep -q "FlaskInstrumentor" "$FILE"; then
+            echo "✅ Backend service is properly instrumented!"
+          else
+            echo "❌ Backend service instrumentation incomplete"
+            exit 1
+          fi
+
+      - name: Check Database Service instrumentation
+        run: |
+          echo "🔍 Checking Database service instrumentation..."
+
+          FILE="services/database-service/app.py"
+          if [ ! -f "$FILE" ]; then
+            echo "❌ File not found: $FILE"
+            exit 1
+          fi
+
+          if grep -q "^from opentelemetry import trace" "$FILE" && \
+             grep -q "trace.set_tracer_provider" "$FILE" && \
+             grep -q "FlaskInstrumentor" "$FILE"; then
+            echo "✅ Database service is properly instrumented!"
+          else
+            echo "❌ Database service instrumentation incomplete"
+            exit 1
+          fi
+
+      - name: Build services
+        run: |
+          echo "🏗️ Building Docker images..."
+          docker-compose build
+
+      - name: Start services
+        run: |
+          echo "🚀 Starting services..."
+          docker-compose up -d
+
+          echo "⏳ Waiting for services to be healthy..."
+          sleep 30
+
+      - name: Check services health
+        run: |
+          echo "🏥 Checking service health..."
+
+          # Check Jaeger
+          curl -f http://localhost:16686 && echo "✅ Jaeger is healthy" || echo "❌ Jaeger is not responding"
+
+          # Check services
+          curl -f http://localhost:8080/health && echo "✅ Frontend is healthy" || echo "❌ Frontend is not responding"
+          curl -f http://localhost:8081/health && echo "✅ Backend is healthy" || echo "❌ Backend is not responding"
+          curl -f http://localhost:8082/health && echo "✅ Database Service is healthy" || echo "❌ Database Service is not responding"
+
+      - name: Generate test traffic
+        run: |
+          echo "📡 Generating test traffic..."
+
+          # Make several requests to generate traces
+          for i in {1..5}; do
+            curl -s http://localhost:8080/api/users > /dev/null
+            curl -s http://localhost:8080/api/orders > /dev/null
+            curl -s http://localhost:8080/api/products > /dev/null
+            sleep 1
+          done
+
+          echo "⏳ Waiting for traces to be exported..."
+          sleep 10
+
+      - name: Verify traces in Jaeger
+        run: |
+          echo "🔍 Checking for traces in Jaeger..."
+
+          # Get list of services from Jaeger
+          SERVICES=$(curl -s http://localhost:16686/api/services | python -c "import sys, json; print(' '.join(json.load(sys.stdin).get('data', [])))")
+
+          echo "Services found in Jaeger: $SERVICES"
+
+          # Check for each service
+          for service in frontend backend database-service; do
+            if echo "$SERVICES" | grep -q "$service"; then
+              echo "✅ Found traces for: $service"
+            else
+              echo "⚠️ No traces found for: $service"
+            fi
+          done
+
+      - name: Display logs on failure
+        if: failure()
+        run: |
+          echo "📋 Docker Compose logs:"
+          docker-compose logs
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "🧹 Cleaning up..."
+          docker-compose down -v
+
+      - name: Summary
+        run: |
+          echo ""
+          echo "=========================================="
+          echo "🎉 Distributed Tracing Challenge Complete!"
+          echo "=========================================="
+          echo ""
+          echo "Your tracing instrumentation has been validated."
+          echo ""
+          echo "Next steps:"
+          echo "  1. Run locally with: docker-compose up -d"
+          echo "  2. Generate traffic: curl http://localhost:8080/api/users"
+          echo "  3. View traces at: http://localhost:16686"
+          echo ""

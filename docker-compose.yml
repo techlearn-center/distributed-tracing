@@ -1,0 +1,123 @@
+# Docker Compose for Distributed Tracing Challenge
+# ================================================
+# This sets up Jaeger and three sample microservices
+# for learning distributed tracing.
+#
+# Usage:
+#   docker-compose up -d      # Start all services
+#   docker-compose down       # Stop all services
+#   docker-compose logs -f    # View logs
+
+version: "3.8"
+
+services:
+  # ==========================================================================
+  # JAEGER - Distributed Tracing Backend
+  # ==========================================================================
+  # Jaeger collects, stores, and visualizes traces.
+  # UI available at: http://localhost:16686
+  jaeger:
+    image: jaegertracing/all-in-one:1.51
+    container_name: jaeger
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "14268:14268"   # HTTP collector (legacy)
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - LOG_LEVEL=debug
+    networks:
+      - tracing-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:16686"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================================================
+  # FRONTEND SERVICE
+  # ==========================================================================
+  # Entry point for user requests.
+  # Calls the Backend service.
+  # Available at: http://localhost:8080
+  frontend:
+    build:
+      context: ./services/frontend
+    container_name: frontend
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVICE_NAME=frontend
+      - BACKEND_URL=http://backend:8081
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - OTEL_SERVICE_NAME=frontend
+    depends_on:
+      jaeger:
+        condition: service_healthy
+    networks:
+      - tracing-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================================================
+  # BACKEND SERVICE
+  # ==========================================================================
+  # Business logic layer.
+  # Receives requests from Frontend, calls Database Service.
+  # Available at: http://localhost:8081
+  backend:
+    build:
+      context: ./services/backend
+    container_name: backend
+    ports:
+      - "8081:8081"
+    environment:
+      - SERVICE_NAME=backend
+      - DATABASE_SERVICE_URL=http://database-service:8082
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - OTEL_SERVICE_NAME=backend
+    depends_on:
+      jaeger:
+        condition: service_healthy
+    networks:
+      - tracing-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================================================
+  # DATABASE SERVICE
+  # ==========================================================================
+  # Data access layer.
+  # Simulates database operations.
+  # Available at: http://localhost:8082
+  database-service:
+    build:
+      context: ./services/database-service
+    container_name: database-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SERVICE_NAME=database-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - OTEL_SERVICE_NAME=database-service
+    depends_on:
+      jaeger:
+        condition: service_healthy
+    networks:
+      - tracing-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  tracing-network:
+    driver: bridge

@@ -1,0 +1,75 @@
+{
+  "name": "distributed-tracing",
+  "title": "Distributed Tracing with Jaeger and OpenTelemetry",
+  "description": "Learn distributed tracing by instrumenting microservices with OpenTelemetry and visualizing traces in Jaeger.",
+  "difficulty": "beginner",
+  "estimated_time": "2-3 hours",
+  "category": "observability",
+  "tags": ["tracing", "jaeger", "opentelemetry", "microservices", "docker", "devops", "observability"],
+  "prerequisites": [
+    "Basic Docker knowledge",
+    "Understanding of HTTP and REST APIs",
+    "Familiarity with Python",
+    "Command line basics"
+  ],
+  "learning_objectives": [
+    "Understand distributed tracing concepts (traces, spans, context)",
+    "Set up Jaeger for trace collection and visualization",
+    "Instrument Python services with OpenTelemetry",
+    "Propagate trace context between microservices",
+    "Use Jaeger UI to analyze and debug traces",
+    "Identify performance bottlenecks using traces",
+    "Add custom spans and attributes for better observability"
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "Instrument Frontend Service",
+      "description": "Add OpenTelemetry tracing to the frontend service",
+      "file": "services/frontend/app.py",
+      "points": 25
+    },
+    {
+      "id": 2,
+      "name": "Instrument Backend Service",
+      "description": "Add OpenTelemetry tracing to the backend service",
+      "file": "services/backend/app.py",
+      "points": 25
+    },
+    {
+      "id": 3,
+      "name": "Instrument Database Service",
+      "description": "Add OpenTelemetry tracing to the database service",
+      "file": "services/database-service/app.py",
+      "points": 20
+    },
+    {
+      "id": 4,
+      "name": "Start the Stack",
+      "description": "Run docker-compose and verify all services are healthy",
+      "points": 15
+    },
+    {
+      "id": 5,
+      "name": "Verify Traces in Jaeger",
+      "description": "Generate traffic and view linked traces in Jaeger UI",
+      "points": 15
+    }
+  ],
+  "total_points": 100,
+  "passing_score": 70,
+  "resources": [
+    {
+      "name": "OpenTelemetry Documentation",
+      "url": "https://opentelemetry.io/docs/"
+    },
+    {
+      "name": "Jaeger Documentation",
+      "url": "https://www.jaegertracing.io/docs/"
+    },
+    {
+      "name": "OpenTelemetry Python",
+      "url": "https://opentelemetry.io/docs/languages/python/"
+    }
+  ]
+}
