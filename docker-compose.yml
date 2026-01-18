@@ -8,8 +8,6 @@
 #   docker-compose down       # Stop all services
 #   docker-compose logs -f    # View logs
 
-version: "3.8"
-
 services:
   # ==========================================================================
   # JAEGER - Distributed Tracing Backend
