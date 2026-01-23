@@ -1,75 +1,85 @@
 {
-  "name": "distributed-tracing",
-  "title": "Distributed Tracing with Jaeger and OpenTelemetry",
-  "description": "Learn distributed tracing by instrumenting microservices with OpenTelemetry and visualizing traces in Jaeger.",
-  "difficulty": "beginner",
-  "estimated_time": "2-3 hours",
-  "category": "observability",
-  "tags": ["tracing", "jaeger", "opentelemetry", "microservices", "docker", "devops", "observability"],
+  "id": "distributed-tracing",
+  "title": "Distributed Tracing with Jaeger & OpenTelemetry",
+  "description": "Master distributed tracing to debug and optimize complex microservices architectures using OpenTelemetry and Jaeger",
+  "difficulty": "intermediate",
+  "level": 3,
+  "track": "infrastructure",
+  "estimated_time": "10-14 hours",
   "prerequisites": [
-    "Basic Docker knowledge",
-    "Understanding of HTTP and REST APIs",
-    "Familiarity with Python",
-    "Command line basics"
+    "kubernetes-basics",
+    "microservices-architecture",
+    "basic-observability"
   ],
-  "learning_objectives": [
-    "Understand distributed tracing concepts (traces, spans, context)",
-    "Set up Jaeger for trace collection and visualization",
-    "Instrument Python services with OpenTelemetry",
-    "Propagate trace context between microservices",
-    "Use Jaeger UI to analyze and debug traces",
-    "Identify performance bottlenecks using traces",
-    "Add custom spans and attributes for better observability"
+  "skills": [
+    "OpenTelemetry",
+    "Jaeger",
+    "Distributed Tracing",
+    "Span Instrumentation",
+    "Sampling Strategies",
+    "Observability"
+  ],
+  "tools": [
+    "opentelemetry",
+    "jaeger",
+    "kubectl",
+    "python",
+    "nodejs"
   ],
   "tasks": [
     {
-      "id": 1,
-      "name": "Instrument Frontend Service",
-      "description": "Add OpenTelemetry tracing to the frontend service",
-      "file": "services/frontend/app.py",
-      "points": 25
+      "id": "task1-infrastructure",
+      "title": "Jaeger Deployment & OpenTelemetry Collector",
+      "points": 15,
+      "description": "Deploy Jaeger with Elasticsearch and configure OpenTelemetry Collector"
     },
     {
-      "id": 2,
-      "name": "Instrument Backend Service",
-      "description": "Add OpenTelemetry tracing to the backend service",
-      "file": "services/backend/app.py",
-      "points": 25
+      "id": "task2-instrumentation",
+      "title": "Application Instrumentation",
+      "points": 25,
+      "description": "Instrument Python and Node.js services with OpenTelemetry"
     },
     {
-      "id": 3,
-      "name": "Instrument Database Service",
-      "description": "Add OpenTelemetry tracing to the database service",
-      "file": "services/database-service/app.py",
-      "points": 20
+      "id": "task3-attributes",
+      "title": "Advanced Span Attributes & Events",
+      "points": 20,
+      "description": "Implement semantic conventions, baggage, and rich span events"
     },
     {
-      "id": 4,
-      "name": "Start the Stack",
-      "description": "Run docker-compose and verify all services are healthy",
-      "points": 15
+      "id": "task4-sampling",
+      "title": "Sampling Strategies & Performance",
+      "points": 20,
+      "description": "Configure adaptive head-based and tail-based sampling"
     },
     {
-      "id": 5,
-      "name": "Verify Traces in Jaeger",
-      "description": "Generate traffic and view linked traces in Jaeger UI",
-      "points": 15
+      "id": "task5-analysis",
+      "title": "Trace Analysis & Alerting",
+      "points": 20,
+      "description": "Build dashboards and SLO-based alerting from traces"
     }
   ],
   "total_points": 100,
   "passing_score": 70,
+  "tags": [
+    "opentelemetry",
+    "jaeger",
+    "tracing",
+    "observability",
+    "microservices",
+    "debugging"
+  ],
   "resources": [
     {
-      "name": "OpenTelemetry Documentation",
+      "title": "OpenTelemetry Documentation",
       "url": "https://opentelemetry.io/docs/"
     },
     {
-      "name": "Jaeger Documentation",
+      "title": "Jaeger Documentation",
       "url": "https://www.jaegertracing.io/docs/"
     },
     {
-      "name": "OpenTelemetry Python",
-      "url": "https://opentelemetry.io/docs/languages/python/"
+      "title": "W3C Trace Context",
+      "url": "https://www.w3.org/TR/trace-context/"
     }
   ]
 }
